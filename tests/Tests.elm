@@ -6,6 +6,7 @@ import HSLuv exposing (..)
 import SnapshotRev4 exposing (referenceString)
 import Json.Decode as Decode exposing (Decoder)
 import Array exposing (Array)
+import Color exposing (Color)
 
 
 type alias Reference =
@@ -99,7 +100,27 @@ referenceTests =
 referenceTest : Reference -> Test
 referenceTest ref =
     Test.describe ref.hex
-        [ Test.describe "hsluvToRgb"
+        [ Test.describe "lchToLuv"
+            (tupleTests (lchToLuv (ref.lch)) ref.luv)
+        , Test.describe "luvToLch"
+            (tupleTests (luvToLch (ref.luv)) ref.lch)
+        , Test.describe "xyzToRgb"
+            (tupleTests (xyzToRgb (ref.xyz)) ref.rgb)
+        , Test.describe "rgbToXyz"
+            (tupleTests (rgbToXyz (ref.rgb)) ref.xyz)
+        , Test.describe "xyzToLuv"
+            (tupleTests (xyzToLuv (ref.xyz)) ref.luv)
+        , Test.describe "luvToXyz"
+            (tupleTests (luvToXyz (ref.luv)) ref.xyz)
+        , Test.describe "hsluvToLch"
+            (tupleTests (hsluvToLch (ref.hsluv)) ref.lch)
+        , Test.describe "lchToHsluv"
+            (tupleTests (lchToHsluv (ref.lch)) ref.hsluv)
+        , Test.describe "hpluvToLch"
+            (tupleTests (hpluvToLch (ref.hpluv)) ref.lch)
+        , Test.describe "lchToHpluv"
+            (tupleTests (lchToHpluv (ref.lch)) ref.hpluv)
+        , Test.describe "hsluvToRgb"
             (tupleTests (hsluvToRgb (ref.hsluv)) ref.rgb)
         , Test.describe "hpluvToRgb"
             (tupleTests (hpluvToRgb (ref.hpluv)) ref.rgb)
@@ -107,6 +128,8 @@ referenceTest ref =
             (tupleTests (rgbToHsluv (ref.rgb)) ref.hsluv)
         , Test.describe "rgbToHpluv"
             (tupleTests (rgbToHpluv (ref.rgb)) ref.hpluv)
+        , Test.describe "hsluv"
+            (colorTests ref.hsluv ref.rgb)
         ]
 
 
@@ -119,4 +142,23 @@ tupleTests ( a0, a1, a2 ) ( b0, b1, b2 ) =
         [ test "0" <| \_ -> check a0 b0
         , test "1" <| \_ -> check a1 b1
         , test "2" <| \_ -> check a2 b2
+        ]
+
+
+colorTests : ( Float, Float, Float ) -> ( Float, Float, Float ) -> List Test
+colorTests ( a0, a1, a2 ) ( b0, b1, b2 ) =
+    let
+        color =
+            hsluva a0 a1 a2 0.5
+
+        { red, green, blue, alpha } =
+            Color.toRgb color
+
+        check a b =
+            Expect.equal a (round b)
+    in
+        [ test "r" <| \_ -> check red b0
+        , test "g" <| \_ -> check green b1
+        , test "b" <| \_ -> check blue b2
+        , test "a" <| \_ -> Expect.equal alpha 0.5
         ]
