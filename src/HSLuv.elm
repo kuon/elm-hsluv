@@ -57,7 +57,7 @@ hsluva h s l a =
         ( r, g, b ) =
             hsluvToRgb ( h, s, l )
     in
-        Color.rgba (round r) (round g) (round b) a
+        Color.rgba (round (r * 255)) (round (g * 255)) (round (b * 255)) a
 
 
 {-| `toHsluv` extract the components of a color in the HSLuv format
@@ -76,7 +76,11 @@ toHsluv color =
             Color.toRgb color
 
         ( h, s, l ) =
-            rgbToHsluv ( toFloat red, toFloat green, toFloat blue )
+            rgbToHsluv
+                ( (toFloat red) / 255.0
+                , (toFloat green) / 255.0
+                , (toFloat blue) / 255.0
+                )
     in
         { hue = h, saturation = s, lightness = l, alpha = alpha }
 

@@ -155,7 +155,7 @@ colorTests ( a0, a1, a2 ) ( b0, b1, b2 ) =
             Color.toRgb color
 
         check a b =
-            Expect.equal a (round b)
+            Expect.equal a (round (255 * b))
     in
         [ test "r" <| \_ -> check red b0
         , test "g" <| \_ -> check green b1
