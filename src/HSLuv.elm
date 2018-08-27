@@ -1,5 +1,6 @@
 module HSLuv exposing
-    ( hsluv, hsluv360, rgb, rgb255
+    ( Color
+    , hsluv, hsluv360, rgb, rgb255
     , toHsluv, toHsluv360, toRgb, toRgb255
     , hsluvToRgb, hpluvToRgb, rgbToHsluv, rgbToHpluv
     , lchToLuv, luvToLch, xyzToRgb, rgbToXyz, xyzToLuv, luvToXyz
@@ -9,12 +10,18 @@ module HSLuv exposing
 {-| Convert color between HSLuv and RGB spaces
 
 
+
+# Colors
+
+@docs Color
+
+
 # Create colors (constructors)
 
 @docs hsluv, hsluv360, rgb, rgb255
 
 
-# Convert colors (extractor)
+# Convert colors (extractors)
 
 @docs toHsluv, toHsluv360, toRgb, toRgb255
 
@@ -32,6 +39,12 @@ module HSLuv exposing
 -}
 
 import HSLuv.Color exposing (Color(..))
+
+
+{-| Opaque color type
+-}
+type alias Color =
+    HSLuv.Color.Color
 
 
 {-| `hsluv` create a Color with normalized HSLuv
