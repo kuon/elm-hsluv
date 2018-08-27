@@ -11,6 +11,14 @@ HSLuv references: <http://www.hsluv.org/>
 ## Basic Usage
 
 ```elm
-HSLuv.hsluv 150 100 50 -- create a Color in the HSLuv color space
+-- create a Color in the HSLuv color space
+c = HSLuv.hsluv360 { hue = 150, saturation = 100, lightness = 50, alpha = 1 }
+
+-- turn a color into normalized components
+{ red, green, saturation, lightness } = HSLuv.rgb c
 ```
 
+## Compatibility
+
+- Latest version is targeted at elm `0.19`.
+- Version **1.0.1** is the last version compatible with elm `0.18`.

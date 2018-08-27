@@ -1,30 +1,22 @@
-module HSLuv
-    exposing
-        ( hsluva
-        , hsluv
-        , toHsluv
-        , hsluvToRgb
-        , hpluvToRgb
-        , rgbToHsluv
-        , rgbToHpluv
-        , lchToLuv
-        , luvToLch
-        , xyzToRgb
-        , rgbToXyz
-        , xyzToLuv
-        , luvToXyz
-        , hsluvToLch
-        , lchToHsluv
-        , hpluvToLch
-        , lchToHpluv
-        )
+module HSLuv exposing
+    ( hsluv, hsluv360, rgb, rgb255
+    , toHsluv, toHsluv360, toRgb, toRgb255
+    , hsluvToRgb, hpluvToRgb, rgbToHsluv, rgbToHpluv
+    , lchToLuv, luvToLch, xyzToRgb, rgbToXyz, xyzToLuv, luvToXyz
+    , hsluvToLch, lchToHsluv, hpluvToLch, lchToHpluv
+    )
 
 {-| Convert color between HSLuv and RGB spaces
 
 
-# High level functions
+# Create colors (constructors)
 
-@docs hsluv, hsluva, toHsluv
+@docs hsluv, hsluv360, rgb, rgb255
+
+
+# Convert colors (extractor)
+
+@docs toHsluv, toHsluv360, toRgb, toRgb255
 
 
 # Low level functions
@@ -39,28 +31,69 @@ module HSLuv
 
 -}
 
-import Color exposing (Color)
+import HSLuv.Color exposing (Color(..))
 
 
-{-| `hsluv` create a Color with HSLuv components
+{-| `hsluv` create a Color with normalized HSLuv
+components (0->1) and an alpha channel
 -}
-hsluv : Float -> Float -> Float -> Color
-hsluv h s l =
-    hsluva h s l 1
+hsluv :
+    { hue : Float
+    , saturation : Float
+    , lightness : Float
+    , alpha : Float
+    }
+    -> Color
+hsluv c =
+    HSLuv
+        { hue = c.hue * 360
+        , saturation = c.saturation * 100
+        , lightness = c.lightness * 100
+        , alpha = c.alpha
+        }
 
 
-{-| `hsluva` create a Color with HSLuv components and an alpha channel
+{-| `hsluv360` create a Color with HSLuv
+components and an alpha channel
+
+    - hue range is 0->360
+    - saturation range is 0->100
+    - lightness range is 0->100
+    - alpha range is 0->1
+
 -}
-hsluva : Float -> Float -> Float -> Float -> Color
-hsluva h s l a =
-    let
-        ( r, g, b ) =
-            hsluvToRgb ( h, s, l )
-    in
-        Color.rgba (round (r * 255)) (round (g * 255)) (round (b * 255)) a
+hsluv360 :
+    { hue : Float
+    , saturation : Float
+    , lightness : Float
+    , alpha : Float
+    }
+    -> Color
+hsluv360 =
+    HSLuv
 
 
-{-| `toHsluv` extract the components of a color in the HSLuv format
+{-| `rgb` create a Color with normalized RGB components (0->1)
+and an alpha channel
+-}
+rgb : { red : Float, green : Float, blue : Float, alpha : Float } -> Color
+rgb =
+    RGB
+
+
+{-| `rgb255` create a Color with RGB components (0->255) and an alpha channel (0->1)
+-}
+rgb255 : { red : Int, green : Int, blue : Int, alpha : Float } -> Color
+rgb255 c =
+    rgb
+        { red = toFloat c.red / 255
+        , green = toFloat c.green / 255
+        , blue = toFloat c.blue / 255
+        , alpha = c.alpha
+        }
+
+
+{-| `toHsluv` extract the normalized components of a color in the HSLuv format
 -}
 toHsluv :
     Color
@@ -71,18 +104,111 @@ toHsluv :
         , alpha : Float
         }
 toHsluv color =
-    let
-        { red, green, blue, alpha } =
-            Color.toRgb color
+    case color of
+        HSLuv c ->
+            { hue = c.hue / 360
+            , saturation = c.saturation / 100
+            , lightness = c.lightness / 100
+            , alpha = c.alpha
+            }
 
-        ( h, s, l ) =
-            rgbToHsluv
-                ( (toFloat red) / 255.0
-                , (toFloat green) / 255.0
-                , (toFloat blue) / 255.0
-                )
-    in
-        { hue = h, saturation = s, lightness = l, alpha = alpha }
+        RGB c ->
+            let
+                ( h, s, l ) =
+                    rgbToHsluv ( c.red, c.green, c.blue )
+            in
+            { hue = h / 360
+            , saturation = s / 100
+            , lightness = l / 100
+            , alpha = c.alpha
+            }
+
+
+{-| `toHsluv360` extract the components of a color in the HSLuv format
+
+    - hue range is 0->360
+    - saturation range is 0->100
+    - lightness range is 0->100
+    - alpha range is 0->1
+
+-}
+toHsluv360 :
+    Color
+    ->
+        { hue : Float
+        , saturation : Float
+        , lightness : Float
+        , alpha : Float
+        }
+toHsluv360 color =
+    case color of
+        HSLuv c ->
+            c
+
+        RGB c ->
+            let
+                ( h, s, l ) =
+                    rgbToHsluv ( c.red, c.green, c.blue )
+            in
+            { hue = h, saturation = s, lightness = l, alpha = c.alpha }
+
+
+{-| `toRgb` extract the normalized components of a color in the RGBA format
+-}
+toRgb :
+    Color
+    ->
+        { red : Float
+        , green : Float
+        , blue : Float
+        , alpha : Float
+        }
+toRgb color =
+    case color of
+        HSLuv c ->
+            let
+                ( r, g, b ) =
+                    hsluvToRgb ( c.hue, c.saturation, c.lightness )
+            in
+            { red = r
+            , green = g
+            , blue = b
+            , alpha = c.alpha
+            }
+
+        RGB c ->
+            c
+
+
+{-| `toRgb255` extract the components of a color in the RGBA format (0->255)
+-}
+toRgb255 :
+    Color
+    ->
+        { red : Int
+        , green : Int
+        , blue : Int
+        , alpha : Float
+        }
+toRgb255 color =
+    case color of
+        HSLuv c ->
+            let
+                ( r, g, b ) =
+                    hsluvToRgb ( c.hue, c.saturation, c.lightness )
+            in
+            { red = r * 255 |> round
+            , green = g * 255 |> round
+            , blue = b * 255 |> round
+            , alpha = c.alpha
+            }
+
+        RGB c ->
+            { red = c.red * 255 |> round
+            , green = c.green * 255 |> round
+            , blue = c.blue * 255 |> round
+            , alpha = c.alpha
+            }
 
 
 type alias Vec2 =
@@ -145,7 +271,7 @@ lchToLuv ( l, c, h ) =
         hRad =
             h / 360.0 * 2.0 * pi
     in
-        ( l, cos (hRad) * c, sin (hRad) * c )
+    ( l, cos hRad * c, sin hRad * c )
 
 
 {-| `luvToLch` convert LUV components to LCH
@@ -159,16 +285,18 @@ luvToLch ( l, u, v ) =
         h =
             if c < minF then
                 0
+
             else
-                (atan2 v u) * 180.0 / pi
+                atan2 v u * 180.0 / pi
 
         h_ =
             if h < 0 then
                 360 + h
+
             else
                 h
     in
-        ( l, c, h_ )
+    ( l, c, h_ )
 
 
 {-| `xyzToRgb` convert XYZ components to RGB
@@ -182,7 +310,7 @@ xyzToRgb xyz =
         ( a, b, c ) =
             ( dotProduct m1 xyz, dotProduct m2 xyz, dotProduct m3 xyz )
     in
-        ( fromLinear a, fromLinear b, fromLinear c )
+    ( fromLinear a, fromLinear b, fromLinear c )
 
 
 {-| `rgbToXyz` convert RGB components to XYZ
@@ -196,7 +324,7 @@ rgbToXyz ( r, g, b ) =
         rgb_ =
             ( toLinear r, toLinear g, toLinear b )
     in
-        ( dotProduct m1 rgb_, dotProduct m2 rgb_, dotProduct m3 rgb_ )
+    ( dotProduct m1 rgb_, dotProduct m2 rgb_, dotProduct m3 rgb_ )
 
 
 {-| `xyzToLuv` convert XYZ components to LUV
@@ -207,23 +335,24 @@ xyzToLuv ( x, y, z ) =
         l =
             f y
     in
-        if l == 0 || (x == 0 && y == 0 && z == 0) then
-            ( 0, 0, 0 )
-        else
-            let
-                varU =
-                    (4.0 * x) / (x + (15.0 * y) + (3.0 * z))
+    if l == 0 || (x == 0 && y == 0 && z == 0) then
+        ( 0, 0, 0 )
 
-                varV =
-                    (9.0 * y) / (x + (15.0 * y) + (3.0 * z))
+    else
+        let
+            varU =
+                (4.0 * x) / (x + (15.0 * y) + (3.0 * z))
 
-                u =
-                    13.0 * l * (varU - refU)
+            varV =
+                (9.0 * y) / (x + (15.0 * y) + (3.0 * z))
 
-                v =
-                    13.0 * l * (varV - refV)
-            in
-                ( l, u, v )
+            u =
+                13.0 * l * (varU - refU)
+
+            v =
+                13.0 * l * (varV - refV)
+        in
+        ( l, u, v )
 
 
 {-| `luvToXyz` convert LUV components to XYZ
@@ -232,6 +361,7 @@ luvToXyz : Vec3 -> Vec3
 luvToXyz ( l, u, v ) =
     if l == 0 then
         ( 0, 0, 0 )
+
     else
         let
             varY =
@@ -252,7 +382,7 @@ luvToXyz ( l, u, v ) =
             z =
                 (9.0 * y - (15.0 * varV * y) - (varV * x)) / (3.0 * varV)
         in
-            ( x, y, z )
+        ( x, y, z )
 
 
 {-| `hsluvToLch` convert HSLuv components to LCH
@@ -261,10 +391,12 @@ hsluvToLch : Vec3 -> Vec3
 hsluvToLch ( h, s, l ) =
     if l > maxF then
         ( 100.0, 0, h )
+
     else if l < minF then
         ( 0.0, 0.0, h )
+
     else
-        ( l, (maxSafeChromaForLH l h) / 100.0 * s, h )
+        ( l, maxSafeChromaForLH l h / 100.0 * s, h )
 
 
 {-| `lchToHsluv` convert LCH components to HSLuv
@@ -273,14 +405,16 @@ lchToHsluv : Vec3 -> Vec3
 lchToHsluv ( l, c, h ) =
     if l > maxF then
         ( h, 0, 100.0 )
+
     else if l < minF then
         ( h, 0.0, 0.0 )
+
     else
         let
             maxChroma =
                 maxSafeChromaForLH l h
         in
-            ( h, c / maxChroma * 100.0, l )
+        ( h, c / maxChroma * 100.0, l )
 
 
 {-| `hpluvToLch` convert HPLuv components to LCH
@@ -289,10 +423,12 @@ hpluvToLch : Vec3 -> Vec3
 hpluvToLch ( h, s, l ) =
     if l > maxF then
         ( 100.0, 0, h )
+
     else if l < minF then
         ( 0.0, 0.0, h )
+
     else
-        ( l, (maxSafeChromaForL l) / 100.0 * s, h )
+        ( l, maxSafeChromaForL l / 100.0 * s, h )
 
 
 {-| `lchToHpluv` convert LCH components to HPLuv
@@ -301,10 +437,12 @@ lchToHpluv : Vec3 -> Vec3
 lchToHpluv ( l, c, h ) =
     if l > maxF then
         ( h, 0.0, 100.0 )
+
     else if l < minF then
         ( h, 0.0, 0.0 )
+
     else
-        ( h, c / (maxSafeChromaForL l) * 100.0, l )
+        ( h, c / maxSafeChromaForL l * 100.0, l )
 
 
 getBounds : Float -> Bounds
@@ -316,6 +454,7 @@ getBounds l =
         sub_ =
             if sub > epsilon then
                 sub
+
             else
                 l / kappa
 
@@ -333,18 +472,18 @@ getBounds l =
                 bottom =
                     (632260.0 * m3 - 126452.0 * m2) * sub_ + 126452.0 * t
             in
-                ( top1 / bottom, top2 / bottom )
+            ( top1 / bottom, top2 / bottom )
 
-        ( m1, m2, m3 ) =
+        ( m1_, m2_, m3_ ) =
             m
     in
-        [ compute m1 0
-        , compute m1 1
-        , compute m2 0
-        , compute m2 1
-        , compute m3 0
-        , compute m3 1
-        ]
+    [ compute m1_ 0
+    , compute m1_ 1
+    , compute m2_ 0
+    , compute m2_ 1
+    , compute m3_ 0
+    , compute m3_ 1
+    ]
 
 
 maxSafeChromaForL : Float -> Float
@@ -355,12 +494,13 @@ maxSafeChromaForL l =
                 length =
                     distanceLineFromOrigin bound
             in
-                if length >= 0 then
-                    min val length
-                else
-                    val
+            if length >= 0 then
+                min val length
+
+            else
+                val
     in
-        List.foldl fold 1.7976931348623157e308 (getBounds l)
+    List.foldl fold 1.7976931348623157e308 (getBounds l)
 
 
 maxSafeChromaForLH : Float -> Float -> Float
@@ -374,22 +514,23 @@ maxSafeChromaForLH l h =
                 length =
                     lengthOfRayUntilIntersect hRad bound
             in
-                if length >= 0 then
-                    min val length
-                else
-                    val
+            if length >= 0 then
+                min val length
+
+            else
+                val
     in
-        List.foldl fold 1.7976931348623157e308 (getBounds l)
+    List.foldl fold 1.7976931348623157e308 (getBounds l)
 
 
 distanceLineFromOrigin : Vec2 -> Float
 distanceLineFromOrigin ( slope, intercept ) =
-    (abs intercept) / (sqrt (slope ^ 2 + 1))
+    abs intercept / sqrt (slope ^ 2 + 1)
 
 
 lengthOfRayUntilIntersect : Float -> Vec2 -> Float
 lengthOfRayUntilIntersect theta ( slope, intercept ) =
-    intercept / (sin (theta) - slope * cos (theta))
+    intercept / (sin theta - slope * cos theta)
 
 
 dotProduct : Vec3 -> Vec3 -> Float
@@ -452,6 +593,7 @@ f : Float -> Float
 f t =
     if t > epsilon then
         116.0 * ((t / refY) ^ (1.0 / 3.0)) - 16.0
+
     else
         t / refY * kappa
 
@@ -460,6 +602,7 @@ fInv : Float -> Float
 fInv t =
     if t > 8 then
         refY * ((t + 16.0) / 116.0) ^ 3.0
+
     else
         refY * t / kappa
 
@@ -468,6 +611,7 @@ toLinear : Float -> Float
 toLinear c =
     if c > 0.04045 then
         ((c + 0.055) / 1.055) ^ 2.4
+
     else
         c / 12.92
 
@@ -476,5 +620,6 @@ fromLinear : Float -> Float
 fromLinear c =
     if c <= 0.0031308 then
         12.92 * c
+
     else
-        (1.055 * (c ^ (1.0 / 2.4)) - 0.055)
+        1.055 * (c ^ (1.0 / 2.4)) - 0.055
