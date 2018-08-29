@@ -9,6 +9,11 @@ module HSLuv exposing
 
 {-| Convert color between HSLuv and RGB spaces
 
+This package uses an internal color representation to limit the number of
+conversion to the minimum.
+
+If you create a color with the `hsluv` constructor and then manipulate it with
+the `HSLuv.Manipulate` module, there will be no new conversion.
 
 
 # Colors

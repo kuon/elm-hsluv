@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Expect exposing (FloatingPointTolerance(..), equal)
 import HSLuv exposing (..)
 import HSLuv.Color exposing (Color)
+import HSLuv.Manipulate exposing (..)
 import Json.Decode as Decode exposing (Decoder)
 import SnapshotRev4 exposing (referenceString)
 import Test exposing (..)
@@ -22,7 +23,10 @@ type alias Reference =
 
 hsluvTests : Test
 hsluvTests =
-    Test.describe "HSLuv references" referenceTests
+    Test.describe "HSLuv"
+        [ --Test.describe "references" referenceTests
+          Test.describe "manipulate" manipulateTests
+        ]
 
 
 referencesDecoder : Decoder (List Reference)
@@ -161,4 +165,156 @@ colorTests ( a0, a1, a2 ) ( b0, b1, b2 ) =
     , test "g" <| \_ -> check green b1
     , test "b" <| \_ -> check blue b2
     , test "a" <| \_ -> Expect.within (Absolute 0.000000001) 0.5 alpha
+    ]
+
+
+manipulateTests : List Test
+manipulateTests =
+    let
+        check =
+            Expect.within (Absolute 0.000000001)
+
+        color =
+            hsluv360 { hue = 100, saturation = 25, lightness = 86, alpha = 0.5 }
+    in
+    [ test "set red" <|
+        \_ ->
+            let
+                newColor =
+                    setRed 0.4 color
+
+                { red, green, blue, alpha } =
+                    toRgb newColor
+            in
+            check red 0.4
+    , test "set green" <|
+        \_ ->
+            let
+                newColor =
+                    setGreen 0.3 color
+
+                { red, green, blue, alpha } =
+                    toRgb newColor
+            in
+            check green 0.3
+    , test "set blue" <|
+        \_ ->
+            let
+                newColor =
+                    setBlue 0.8 color
+
+                { red, green, blue, alpha } =
+                    toRgb newColor
+            in
+            check blue 0.8
+    , test "set alpha" <|
+        \_ ->
+            let
+                newColor =
+                    setAlpha 0.7 color
+
+                { red, green, blue, alpha } =
+                    toRgb newColor
+            in
+            check alpha 0.7
+    , test "set hue" <|
+        \_ ->
+            let
+                newColor =
+                    setHue 0.25 color
+
+                { hue, saturation, lightness, alpha } =
+                    toHsluv newColor
+            in
+            check hue 0.25
+    , test "set saturation" <|
+        \_ ->
+            let
+                newColor =
+                    setSaturation 0.9 color
+
+                { hue, saturation, lightness, alpha } =
+                    toHsluv newColor
+            in
+            check saturation 0.9
+    , test "set lightness" <|
+        \_ ->
+            let
+                newColor =
+                    setLightness 0.2 color
+
+                { hue, saturation, lightness, alpha } =
+                    toHsluv newColor
+            in
+            check lightness 0.2
+    , test "mult red" <|
+        \_ ->
+            let
+                newColor =
+                    multRed 0.5 color
+
+                { red, green, blue, alpha } =
+                    toRgb newColor
+            in
+            check red 0.409821226702
+    , test "mult green" <|
+        \_ ->
+            let
+                newColor =
+                    multGreen 1.1 color
+
+                { red, green, blue, alpha } =
+                    toRgb newColor
+            in
+            check green 0.9467682225141888
+    , test "mult blue" <|
+        \_ ->
+            let
+                newColor =
+                    multBlue 0.2 color
+
+                { red, green, blue, alpha } =
+                    toRgb newColor
+            in
+            check blue 0.145375922330956
+    , test "mult alpha" <|
+        \_ ->
+            let
+                newColor =
+                    multAlpha 1.2 color
+
+                { red, green, blue, alpha } =
+                    toRgb newColor
+            in
+            check alpha 0.6
+    , test "mult hue" <|
+        \_ ->
+            let
+                newColor =
+                    multHue 0.72 color
+
+                { hue, saturation, lightness, alpha } =
+                    toHsluv newColor
+            in
+            check hue 0.2
+    , test "mult saturation" <|
+        \_ ->
+            let
+                newColor =
+                    multSaturation 2 color
+
+                { hue, saturation, lightness, alpha } =
+                    toHsluv newColor
+            in
+            check saturation 0.5
+    , test "mult lightness" <|
+        \_ ->
+            let
+                newColor =
+                    multLightness 0.6 color
+
+                { hue, saturation, lightness, alpha } =
+                    toHsluv newColor
+            in
+            check lightness 0.516
     ]
