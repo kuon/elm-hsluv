@@ -6,6 +6,7 @@ import HSLuv exposing (..)
 import HSLuv.Color exposing (Color)
 import HSLuv.Manipulate exposing (..)
 import Json.Decode as Decode exposing (Decoder)
+import List.Extra
 import SnapshotRev4 exposing (referenceString)
 import Test exposing (..)
 
@@ -24,8 +25,8 @@ type alias Reference =
 hsluvTests : Test
 hsluvTests =
     Test.describe "HSLuv"
-        [ --Test.describe "references" referenceTests
-          Test.describe "manipulate" manipulateTests
+        [ Test.describe "references" referenceTests
+        , Test.describe "manipulate" manipulateTests
         ]
 
 
@@ -93,7 +94,11 @@ referenceTests : List Test
 referenceTests =
     case Decode.decodeString referencesDecoder referenceString of
         Ok refs ->
-            List.map referenceTest refs
+            List.indexedMap
+                (\i items ->
+                    Test.describe ("chunk " ++ String.fromInt i) <| List.map referenceTest items
+                )
+                (List.Extra.greedyGroupsOf 100 refs)
 
         Err _ ->
             [ test "failed decoding" <|
