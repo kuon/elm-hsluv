@@ -1,7 +1,7 @@
 module HSLuv exposing
-    ( Color
-    , hsluv, hsluv360, rgb, rgb255
-    , toHsluv, toHsluv360, toRgb, toRgb255
+    ( HSLuv
+    , hsluv, hsluv360, rgba, color
+    , toHsluv, toColor, toRgba
     , hsluvToRgb, hpluvToRgb, rgbToHsluv, rgbToHpluv
     , lchToLuv, luvToLch, xyzToRgb, rgbToXyz, xyzToLuv, luvToXyz
     , hsluvToLch, lchToHsluv, hpluvToLch, lchToHpluv
@@ -18,17 +18,17 @@ the `HSLuv.Manipulate` module, there will be no new conversion.
 
 # Colors
 
-@docs Color
+@docs HSLuv
 
 
 # Create colors (constructors)
 
-@docs hsluv, hsluv360, rgb, rgb255
+@docs hsluv, hsluv360, rgba, color
 
 
 # Convert colors (extractors)
 
-@docs toHsluv, toHsluv360, toRgb, toRgb255
+@docs toHsluv, toColor, toRgba
 
 
 # Low level functions
@@ -43,13 +43,14 @@ the `HSLuv.Manipulate` module, there will be no new conversion.
 
 -}
 
-import HSLuv.Color exposing (Color(..))
+import Color exposing (Color)
+import HSLuv.Color exposing (HSLuv(..))
 
 
 {-| Opaque color type
 -}
-type alias Color =
-    HSLuv.Color.Color
+type alias HSLuv =
+    HSLuv.Color.HSLuv
 
 
 {-| `hsluv` create a Color with normalized HSLuv
@@ -61,7 +62,7 @@ hsluv :
     , lightness : Float
     , alpha : Float
     }
-    -> Color
+    -> HSLuv
 hsluv c =
     HSLuv
         { hue = c.hue * 360
@@ -71,7 +72,7 @@ hsluv c =
         }
 
 
-{-| `hsluv360` create a Color with HSLuv
+{-| `hsluv360` creates an HSLuv with
 components and an alpha channel
 
     - hue range is 0->360
@@ -86,147 +87,96 @@ hsluv360 :
     , lightness : Float
     , alpha : Float
     }
-    -> Color
-hsluv360 =
+    -> HSLuv
+hsluv360 c =
     HSLuv
-
-
-{-| `rgb` create a Color with normalized RGB components (0->1)
-and an alpha channel
--}
-rgb : { red : Float, green : Float, blue : Float, alpha : Float } -> Color
-rgb =
-    RGB
-
-
-{-| `rgb255` create a Color with RGB components (0->255) and an alpha channel (0->1)
--}
-rgb255 : { red : Int, green : Int, blue : Int, alpha : Float } -> Color
-rgb255 c =
-    rgb
-        { red = toFloat c.red / 255
-        , green = toFloat c.green / 255
-        , blue = toFloat c.blue / 255
+        { hue = c.hue
+        , saturation = c.saturation
+        , lightness = c.lightness
         , alpha = c.alpha
         }
 
 
-{-| `toHsluv` extract the normalized components of a color in the HSLuv format
+{-| `rgba` creates an HSLuv with normalized RGB components (0->1)
+and an alpha channel
+-}
+rgba : { red : Float, green : Float, blue : Float, alpha : Float } -> HSLuv
+rgba { red, green, blue, alpha } =
+    let
+        ( h, s, l ) =
+            rgbToHsluv ( red, green, blue )
+    in
+    HSLuv { hue = h, saturation = s, lightness = l, alpha = alpha }
+
+
+{-| `color` creates an HSLuv with a Color
+-}
+color : Color -> HSLuv
+color c =
+    let
+        { red, green, blue, alpha } =
+            Color.toRgba c
+
+        ( h, s, l ) =
+            rgbToHsluv ( red, green, blue )
+    in
+    HSLuv { hue = h, saturation = s, lightness = l, alpha = alpha }
+
+
+{-| `toHsluv` extract the normalized components of an HSLuv
 -}
 toHsluv :
-    Color
+    HSLuv
     ->
         { hue : Float
         , saturation : Float
         , lightness : Float
         , alpha : Float
         }
-toHsluv color =
-    case color of
-        HSLuv c ->
-            { hue = c.hue / 360
-            , saturation = c.saturation / 100
-            , lightness = c.lightness / 100
-            , alpha = c.alpha
-            }
-
-        RGB c ->
-            let
-                ( h, s, l ) =
-                    rgbToHsluv ( c.red, c.green, c.blue )
-            in
-            { hue = h / 360
-            , saturation = s / 100
-            , lightness = l / 100
-            , alpha = c.alpha
-            }
+toHsluv (HSLuv c) =
+    { hue = c.hue / 360
+    , saturation = c.saturation / 100
+    , lightness = c.lightness / 100
+    , alpha = c.alpha
+    }
 
 
-{-| `toHsluv360` extract the components of a color in the HSLuv format
-
-    - hue range is 0->360
-    - saturation range is 0->100
-    - lightness range is 0->100
-    - alpha range is 0->1
-
+{-| `toColor` convert an HSLuv color to a Color
 -}
-toHsluv360 :
-    Color
-    ->
-        { hue : Float
-        , saturation : Float
-        , lightness : Float
-        , alpha : Float
+toColor : HSLuv -> Color
+toColor (HSLuv c) =
+    let
+        ( r, g, b ) =
+            hsluvToRgb ( c.hue, c.saturation, c.lightness )
+    in
+    Color.fromRgba
+        { red = r
+        , green = g
+        , blue = b
+        , alpha = c.alpha
         }
-toHsluv360 color =
-    case color of
-        HSLuv c ->
-            c
-
-        RGB c ->
-            let
-                ( h, s, l ) =
-                    rgbToHsluv ( c.red, c.green, c.blue )
-            in
-            { hue = h, saturation = s, lightness = l, alpha = c.alpha }
 
 
 {-| `toRgb` extract the normalized components of a color in the RGBA format
 -}
-toRgb :
-    Color
+toRgba :
+    HSLuv
     ->
         { red : Float
         , green : Float
         , blue : Float
         , alpha : Float
         }
-toRgb color =
-    case color of
-        HSLuv c ->
-            let
-                ( r, g, b ) =
-                    hsluvToRgb ( c.hue, c.saturation, c.lightness )
-            in
-            { red = r
-            , green = g
-            , blue = b
-            , alpha = c.alpha
-            }
-
-        RGB c ->
-            c
-
-
-{-| `toRgb255` extract the components of a color in the RGBA format (0->255)
--}
-toRgb255 :
-    Color
-    ->
-        { red : Int
-        , green : Int
-        , blue : Int
-        , alpha : Float
-        }
-toRgb255 color =
-    case color of
-        HSLuv c ->
-            let
-                ( r, g, b ) =
-                    hsluvToRgb ( c.hue, c.saturation, c.lightness )
-            in
-            { red = r * 255 |> round
-            , green = g * 255 |> round
-            , blue = b * 255 |> round
-            , alpha = c.alpha
-            }
-
-        RGB c ->
-            { red = c.red * 255 |> round
-            , green = c.green * 255 |> round
-            , blue = c.blue * 255 |> round
-            , alpha = c.alpha
-            }
+toRgba (HSLuv c) =
+    let
+        ( r, g, b ) =
+            hsluvToRgb ( c.hue, c.saturation, c.lightness )
+    in
+    { red = r
+    , green = g
+    , blue = b
+    , alpha = c.alpha
+    }
 
 
 type alias Vec2 =

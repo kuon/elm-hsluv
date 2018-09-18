@@ -9,7 +9,7 @@ module HSLuv.Manipulate exposing
 
 {-| Manipulate colors
 
-This module let you manipulate the `Color` type.
+This module let you manipulate the `HSLuv` type.
 
 
 # Set components
@@ -32,54 +32,54 @@ This module let you manipulate the `Color` type.
 -}
 
 import HSLuv exposing (..)
-import HSLuv.Color exposing (Color(..))
+import HSLuv.Color exposing (HSLuv(..))
 
 
 {-| Set the red channel of the color. Requires a value in the 0->1 range.
 -}
-setRed : Float -> Color -> Color
+setRed : Float -> HSLuv -> HSLuv
 setRed newRed =
     mapRed (always newRed)
 
 
 {-| Set the green channel of the color. Requires a value in the 0->1 range.
 -}
-setGreen : Float -> Color -> Color
+setGreen : Float -> HSLuv -> HSLuv
 setGreen newGreen =
     mapGreen (always newGreen)
 
 
 {-| Set the blue channel of the color. Requires a value in the 0->1 range.
 -}
-setBlue : Float -> Color -> Color
+setBlue : Float -> HSLuv -> HSLuv
 setBlue newBlue =
     mapBlue (always newBlue)
 
 
 {-| Set the hue of the color. Requires a value in the 0->1 range.
 -}
-setHue : Float -> Color -> Color
+setHue : Float -> HSLuv -> HSLuv
 setHue newHue =
     mapHue (always newHue)
 
 
 {-| Set the saturation of the color. Requires a value in the 0->1 range.
 -}
-setSaturation : Float -> Color -> Color
+setSaturation : Float -> HSLuv -> HSLuv
 setSaturation newSaturation =
     mapSaturation (always newSaturation)
 
 
 {-| Set the lightness of the color. Requires a value in the 0->1 range.
 -}
-setLightness : Float -> Color -> Color
+setLightness : Float -> HSLuv -> HSLuv
 setLightness newLightness =
     mapLightness (always newLightness)
 
 
 {-| Set the alpha of the color. Requires a value in the 0->1 range.
 -}
-setAlpha : Float -> Color -> Color
+setAlpha : Float -> HSLuv -> HSLuv
 setAlpha newAlpha =
     mapAlpha (always newAlpha)
 
@@ -87,7 +87,7 @@ setAlpha newAlpha =
 {-| Multiply the red channel by the give factor. The result is clamped in the
 0->1 range.
 -}
-multRed : Float -> Color -> Color
+multRed : Float -> HSLuv -> HSLuv
 multRed factor =
     mapRed ((*) factor)
 
@@ -95,7 +95,7 @@ multRed factor =
 {-| Multiply the green channel by the give factor. The result is clamped in the
 0->1 range.
 -}
-multGreen : Float -> Color -> Color
+multGreen : Float -> HSLuv -> HSLuv
 multGreen factor =
     mapGreen ((*) factor)
 
@@ -103,7 +103,7 @@ multGreen factor =
 {-| Multiply the blue channel by the give factor. The result is clamped in the
 0->1 range.
 -}
-multBlue : Float -> Color -> Color
+multBlue : Float -> HSLuv -> HSLuv
 multBlue factor =
     mapBlue ((*) factor)
 
@@ -111,7 +111,7 @@ multBlue factor =
 {-| Multiply the hue by the give factor. The result is clamped in the
 0->1 range.
 -}
-multHue : Float -> Color -> Color
+multHue : Float -> HSLuv -> HSLuv
 multHue factor =
     mapHue ((*) factor)
 
@@ -119,7 +119,7 @@ multHue factor =
 {-| Multiply the saturation by the give factor. The result is clamped in the
 0->1 range.
 -}
-multSaturation : Float -> Color -> Color
+multSaturation : Float -> HSLuv -> HSLuv
 multSaturation factor =
     mapSaturation ((*) factor)
 
@@ -127,7 +127,7 @@ multSaturation factor =
 {-| Multiply the lightness by the give factor. The result is clamped in the
 0->1 range.
 -}
-multLightness : Float -> Color -> Color
+multLightness : Float -> HSLuv -> HSLuv
 multLightness factor =
     mapLightness ((*) factor)
 
@@ -135,7 +135,7 @@ multLightness factor =
 {-| Multiply the alpha by the give factor. The result is clamped in the
 0->1 range.
 -}
-multAlpha : Float -> Color -> Color
+multAlpha : Float -> HSLuv -> HSLuv
 multAlpha factor =
     mapAlpha ((*) factor)
 
@@ -143,13 +143,13 @@ multAlpha factor =
 {-| Map the red channel with the given function. The result is clamped in the
 0->1 range.
 -}
-mapRed : (Float -> Float) -> Color -> Color
+mapRed : (Float -> Float) -> HSLuv -> HSLuv
 mapRed func c =
     let
         { red, green, blue, alpha } =
-            toRgb c
+            toRgba c
     in
-    rgb
+    rgba
         { red = clamp 0 1 (func red)
         , green = green
         , blue = blue
@@ -160,13 +160,13 @@ mapRed func c =
 {-| Map the green channel with the given function. The result is clamped in the
 0->1 range.
 -}
-mapGreen : (Float -> Float) -> Color -> Color
+mapGreen : (Float -> Float) -> HSLuv -> HSLuv
 mapGreen func c =
     let
         { red, green, blue, alpha } =
-            toRgb c
+            toRgba c
     in
-    rgb
+    rgba
         { red = red
         , green = clamp 0 1 (func green)
         , blue = blue
@@ -177,13 +177,13 @@ mapGreen func c =
 {-| Map the blue channel with the given function. The result is clamped in the
 0->1 range.
 -}
-mapBlue : (Float -> Float) -> Color -> Color
+mapBlue : (Float -> Float) -> HSLuv -> HSLuv
 mapBlue func c =
     let
         { red, green, blue, alpha } =
-            toRgb c
+            toRgba c
     in
-    rgb
+    rgba
         { red = red
         , green = green
         , blue = clamp 0 1 (func blue)
@@ -194,7 +194,7 @@ mapBlue func c =
 {-| Map the hue with the given function. The result is clamped in the
 0->1 range.
 -}
-mapHue : (Float -> Float) -> Color -> Color
+mapHue : (Float -> Float) -> HSLuv -> HSLuv
 mapHue func c =
     let
         { hue, saturation, lightness, alpha } =
@@ -211,7 +211,7 @@ mapHue func c =
 {-| Map the saturation with the given function. The result is clamped in the
 0->1 range.
 -}
-mapSaturation : (Float -> Float) -> Color -> Color
+mapSaturation : (Float -> Float) -> HSLuv -> HSLuv
 mapSaturation func c =
     let
         { hue, saturation, lightness, alpha } =
@@ -228,7 +228,7 @@ mapSaturation func c =
 {-| Map the lightness with the given function. The result is clamped in the
 0->1 range.
 -}
-mapLightness : (Float -> Float) -> Color -> Color
+mapLightness : (Float -> Float) -> HSLuv -> HSLuv
 mapLightness func c =
     let
         { hue, saturation, lightness, alpha } =
@@ -245,11 +245,6 @@ mapLightness func c =
 {-| Map the alpha with the given function. The result is clamped in the
 0->1 range.
 -}
-mapAlpha : (Float -> Float) -> Color -> Color
-mapAlpha func color =
-    case color of
-        RGB c ->
-            RGB { c | alpha = clamp 0 1 (func c.alpha) }
-
-        HSLuv c ->
-            HSLuv { c | alpha = clamp 0 1 (func c.alpha) }
+mapAlpha : (Float -> Float) -> HSLuv -> HSLuv
+mapAlpha func (HSLuv c) =
+    HSLuv { c | alpha = clamp 0 1 (func c.alpha) }

@@ -3,7 +3,6 @@ module Tests exposing (hsluvTests)
 import Array exposing (Array)
 import Expect exposing (FloatingPointTolerance(..), equal)
 import HSLuv exposing (..)
-import HSLuv.Color exposing (Color)
 import HSLuv.Manipulate exposing (..)
 import Json.Decode as Decode exposing (Decoder)
 import List.Extra
@@ -161,15 +160,15 @@ colorTests ( a0, a1, a2 ) ( b0, b1, b2 ) =
             hsluv360 { hue = a0, saturation = a1, lightness = a2, alpha = 0.5 }
 
         { red, green, blue, alpha } =
-            toRgb255 color
+            toRgba color
 
         check a b =
-            Expect.equal a (round (255 * b))
+            Expect.within (Absolute 0.000000001) a b
     in
     [ test "r" <| \_ -> check red b0
     , test "g" <| \_ -> check green b1
     , test "b" <| \_ -> check blue b2
-    , test "a" <| \_ -> Expect.within (Absolute 0.000000001) 0.5 alpha
+    , test "a" <| \_ -> check alpha 0.5
     ]
 
 
@@ -189,7 +188,7 @@ manipulateTests =
                     setRed 0.4 color
 
                 { red, green, blue, alpha } =
-                    toRgb newColor
+                    toRgba newColor
             in
             check red 0.4
     , test "set green" <|
@@ -199,7 +198,7 @@ manipulateTests =
                     setGreen 0.3 color
 
                 { red, green, blue, alpha } =
-                    toRgb newColor
+                    toRgba newColor
             in
             check green 0.3
     , test "set blue" <|
@@ -209,7 +208,7 @@ manipulateTests =
                     setBlue 0.8 color
 
                 { red, green, blue, alpha } =
-                    toRgb newColor
+                    toRgba newColor
             in
             check blue 0.8
     , test "set alpha" <|
@@ -219,7 +218,7 @@ manipulateTests =
                     setAlpha 0.7 color
 
                 { red, green, blue, alpha } =
-                    toRgb newColor
+                    toRgba newColor
             in
             check alpha 0.7
     , test "set hue" <|
@@ -259,7 +258,7 @@ manipulateTests =
                     multRed 0.5 color
 
                 { red, green, blue, alpha } =
-                    toRgb newColor
+                    toRgba newColor
             in
             check red 0.409821226702
     , test "mult green" <|
@@ -269,7 +268,7 @@ manipulateTests =
                     multGreen 1.1 color
 
                 { red, green, blue, alpha } =
-                    toRgb newColor
+                    toRgba newColor
             in
             check green 0.9467682225141888
     , test "mult blue" <|
@@ -279,7 +278,7 @@ manipulateTests =
                     multBlue 0.2 color
 
                 { red, green, blue, alpha } =
-                    toRgb newColor
+                    toRgba newColor
             in
             check blue 0.145375922330956
     , test "mult alpha" <|
@@ -289,7 +288,7 @@ manipulateTests =
                     multAlpha 1.2 color
 
                 { red, green, blue, alpha } =
-                    toRgb newColor
+                    toRgba newColor
             in
             check alpha 0.6
     , test "mult hue" <|
