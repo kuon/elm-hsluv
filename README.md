@@ -7,6 +7,9 @@ Convert between HSLuv and RGB.
 
 HSLuv references: <http://www.hsluv.org/>
 
+The `Color` type is provided by the [new color package](
+https://package.elm-lang.org/packages/avh4/elm-color/latest/Color) from `avh4`.
+
 **Note:** If you plan to manipulate HSLuv colors, store them with the provided
 `HSLuv` type and convert them to `Color` at the last possible time as the
 conversion can be expensive. If you just use `HSLuv` as constructor, you may
