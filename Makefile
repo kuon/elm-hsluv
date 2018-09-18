@@ -5,7 +5,7 @@ PATH := ./node_modules/.bin:$(PATH)
 .PHONY: test
 
 test:
-	elm-test
+	elm-test tests/Tests.elm
 
 
 .PHONY: watch
