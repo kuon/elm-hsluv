@@ -7,15 +7,27 @@ Convert between HSLuv and RGB.
 
 HSLuv references: <http://www.hsluv.org/>
 
+**Note:** If you plan to manipulate HSLuv colors, store them with the provided
+`HSLuv` type and convert them to `Color` at the last possible time as the
+conversion can be expensive. If you just use `HSLuv` as constructor, you may
+write an helper like:
+`color h s l = HSLuv.hsluv360 { hue = h, saturation = s, lightness = l, alpha = 1} |> HSLuv.toColor`
+
 
 ## Basic Usage
 
 ```elm
--- create a Color in the HSLuv color space
+-- create an HSLuv color with a Color
+c = HSLuv.color myColor
+
+-- create an HSLuv color with components
 c = HSLuv.hsluv360 { hue = 150, saturation = 100, lightness = 50, alpha = 1 }
 
 -- turn a color into normalized components
-{ red, green, saturation, lightness } = HSLuv.rgb c
+{ red, green, saturation, lightness } = HSLuv.rgba c
+
+-- turn and HSLuv color into a Color
+color = HSLuv.toColor c
 ```
 
 ## Compatibility
