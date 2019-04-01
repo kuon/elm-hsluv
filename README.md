@@ -4,7 +4,6 @@
 
 Convert between HSLuv and RGB.
 
-
 HSLuv references: <http://www.hsluv.org/>
 
 The `Color` type is provided by the [new color package](
