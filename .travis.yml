@@ -6,7 +6,7 @@ node_js:
   - node # latest stable
 
 env:
-  - ELM_VERSION=0.19.0-bugfix2 ELM_TEST_VERSION=0.19.0-beta9
+  - ELM_VERSION=0.19.0-bugfix6 ELM_TEST_VERSION=0.19.0-rev6
 
 cache:
   directories:
